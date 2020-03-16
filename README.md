@@ -22,6 +22,9 @@ import matplotlib.pyplot as plt
 %matplotlib inline
 import seaborn as sns
 import scipy.stats as st
+import warnings
+warnings.filterwarnings('ignore')
+
 np.random.seed(0) #set a random seed for reproducibility
 ```
 
@@ -31,7 +34,8 @@ Next, read in the dataset.  A dataset of 10,000 numbers is stored in `non_normal
 
 
 ```python
-# Your code here
+data = pd.read_csv('non_normal_dataset.csv')
+print(len(data)) # 10000
 ```
 
 ## Detecting Non-Normal Datasets
@@ -44,8 +48,17 @@ In the cell below, use `seaborn`'s `distplot` method to visualize a histogram of
 
 
 ```python
-# Your code here
+sns.distplot(data);
+plt.title('Check Normalilty of Data');
 ```
+
+    C:\Users\FlatIron_User\.conda\envs\learn-env\lib\site-packages\scipy\stats\stats.py:1713: FutureWarning: Using a non-tuple sequence for multidimensional indexing is deprecated; use `arr[tuple(seq)]` instead of `arr[seq]`. In the future this will be interpreted as an array index, `arr[np.array(seq)]`, which will result either in an error or a different result.
+      return np.add.reduce(sorted[indexer] * weights, axis=axis) / sumval
+    
+
+
+![png](index_files/index_6_1.png)
+
 
 As expected, this dataset is not normally distributed.  
 
@@ -55,8 +68,15 @@ In the cell below, use `normaltest()` to check if the dataset is normally distri
 
 
 ```python
-# Your code here
+st.normaltest(data)
 ```
+
+
+
+
+    NormaltestResult(statistic=array([43432.81112653]), pvalue=array([0.]))
+
+
 
 The output may seem a bit hard to interpret since we haven't covered hypothesis testing and p-values in further detail yet.  However, the function tests the hypothesis that the distribution passed into the function differs from the normal distribution. The null hypothesis would then be that the data *is* normally distributed. We typically reject the null hypothesis if the p-value is less than 0.05. For now, that's all you need to remember--this will make more sense once you work with p-values more which you'll do subsequently.  
 
@@ -71,12 +91,15 @@ In the cell below, write a function that takes in an array of numbers `data` and
 
 ```python
 def get_sample(data, n):
-    pass
+    return np.random.choice(np.array(data).reshape(len(data)), size= n)
 
 test_sample = get_sample(data, 30)
 print(test_sample[:5]) 
 # [56, 12, 73, 24, 8] (This will change if you run it multiple times)
 ```
+
+    [56 12 73 24  8]
+    
 
 ## Generating a Sample Mean
 
@@ -85,13 +108,17 @@ Next, we'll write another helper function that takes in a sample and returns the
 
 ```python
 def get_sample_mean(sample):
-    pass
+    return np.mean(sample)
+    
 
 test_sample2 = get_sample(data, 30)
 test_sample2_mean = get_sample_mean(test_sample2)
 print(test_sample2_mean) 
 # 45.3 (This will also change if you run it multiple times)
 ```
+
+    38.07
+    
 
 ### Creating a Sample Distribution of Sample Means
 
@@ -102,11 +129,15 @@ In the cell below, write a function that takes in 3 arguments: the dataset, the 
 
 ```python
 def create_sample_distribution(data, dist_size=100, n=30):
-    pass
+    return [get_sample_mean(get_sample(data, n)) for i in range(0,dist_size)]
+    
 
 test_sample_dist = create_sample_distribution(data)
 print(test_sample_dist[:5]) 
 ```
+
+    [41.33, 48.2, 50.63, 52.23, 45.03]
+    
 
 ## Visualizing the Sample Distribution as it Becomes Normal
 
@@ -118,15 +149,25 @@ In the cell below, create a sample distribution from `data` of `dist_size` 10, w
 
 
 ```python
-# Your code here
+sns.distplot(create_sample_distribution(data, dist_size=10, n=3));
+plt.title('3 Sample Means');
 ```
+
+
+![png](index_files/index_17_0.png)
+
 
 Now, let's increase the `dist_size` to 30, and `n` to 10.  Create another visualization to compare how it changes as size increases.  
 
 
 ```python
-# Your code here
+sns.distplot(create_sample_distribution(data, dist_size=30, n=10));
+plt.title('30 Sample Means');
 ```
+
+
+![png](index_files/index_19_0.png)
+
 
 The data is already looking much more 'normal' than the first sample distribution, and much more 'normal' that the raw non-normal distribution we're sampling from. 
 
@@ -134,8 +175,13 @@ In the cell below, create another sample distribution of `data` with `dist_size`
 
 
 ```python
-# Your code here
+sns.distplot(create_sample_distribution(data, dist_size=1000, n=30));
+plt.title('1000 Sample Means');
 ```
+
+
+![png](index_files/index_21_0.png)
+
 
 Great! As you can see, the dataset _approximates_ a normal distribution. It isn't pretty, but it's generally normal enough that we can use it to answer statistical questions using $z$-scores and p-values.  
 
